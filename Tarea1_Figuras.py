@@ -54,8 +54,10 @@ class Triangulo(Figura):
         self.lado3 = lado3
 
     def get_area(self):
-        s = (self.lado1 + self.lado2 + self.lado3)/2
-        area = sqrt(s*(s - self.lado1)*(s - self.lado2)*(s - self.lado3))
+        s = (self.lado1 + self.lado2 + self.lado3) / 2
+        if s < self.lado1 or s < self.lado2 or s < self.lado3:
+            return 0
+        area = sqrt(s * (s - self.lado1) * (s - self.lado2) * (s - self.lado3))
         return area
 
     def get_perimetro(self):
@@ -64,6 +66,7 @@ class Triangulo(Figura):
 
 def OpcionNoValida():
     print("Opcion no valida")
+    Menu()
 
 
 def OpcionCuadrado():
@@ -82,14 +85,22 @@ def OpcionRectangulo():
 
 def OpcionTriangulo():
     triangulo = Triangulo(
-        int(input("Ingrese lado 1: ")), int(input("Ingrese lado 2: ")),int(input("Ingrese lado 3: "))
+        int(input("Ingrese lado 1: ")),
+        int(input("Ingrese lado 2: ")),
+        int(input("Ingrese lado 3: ")),
     )
-    print("Area: " + str(triangulo.get_area()))
-    print("Perimetro: " + str(triangulo.get_perimetro()))
+    if triangulo.get_area() == 0:
+        print("El triangulo no existe")
+    else:
+        print("Area: " + str(triangulo.get_area()))
+        print("Perimetro: " + str(triangulo.get_perimetro()))
 
 
-print("Seleccione la figura: \n1.Cuadrado\n2.Rectangulo\n3.Triangulo")
-opcion = input()
-switch_figura = {1: OpcionCuadrado, 2: OpcionRectangulo, 3: OpcionTriangulo}
+def Menu():
+    print("Seleccione la figura: \n1.Cuadrado\n2.Rectangulo\n3.Triangulo")
+    opcion = input()
+    switch_figura = {1: OpcionCuadrado, 2: OpcionRectangulo, 3: OpcionTriangulo}
+    switch_figura.get(int(opcion), OpcionNoValida)()
 
-switch_figura.get(int(opcion), OpcionNoValida)()
+
+Menu()
