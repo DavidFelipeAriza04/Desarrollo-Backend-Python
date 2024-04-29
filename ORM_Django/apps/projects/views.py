@@ -4,11 +4,15 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 # self modules
 from .models import *
-from .serializers import ProjectSerializerModel, ProjectSerializer, TaskSerializerModel
+from .serializers import ProjectSerializerModel, ProjectSerializer, TaskSerializerModel, TaskDetailSerializer
+from .permissions import IsMemberOrOwner
 
 # utils
 from datetime import datetime
@@ -17,12 +21,46 @@ from datetime import datetime
 class ProjectViewSet(ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializerModel
+    permission_classes = [IsAuthenticated]
+
 
 class TaskViewSet(ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializerModel
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["project"]
+
+    def get_permissions(self):
+        if self.action == "create":
+            return super().get_permissions() + [IsMemberOrOwner()]
+        return super().get_permissions()
+    
+    def get_serializer_class(self):
+        if self.request.query_params.get("detail", False):
+            return TaskDetailSerializer
+        return super().get_serializer_class()
+
+    def list(self, request, *args, **kwargs):
+        print(self.request.user, "<-->")
+        return super().list(request, *args, **kwargs)
+
+    def filter_queryset(self, queryset):
+        request_user = self.request.user
+        queryset = super().filter_queryset(queryset)
+        queryset = queryset.filter(owner__user=request_user)
+        return queryset
+
+    @action(detail=True, methods=["post"])
+    def complete_task(self, request, pk=None):
+        task = self.get_object()
+        task.is_completed = True
+        task.save()
+        task_data = self.get_serializer_class()(task).data
+        return Response(task_data)
 
 
+# YA NO ES NECESARIO LOS API VIEWS
 class ProjectApiView(APIView):
     def get(self, request):
         projects = Project.objects.all()

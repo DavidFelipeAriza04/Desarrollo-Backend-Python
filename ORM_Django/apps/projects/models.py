@@ -8,6 +8,7 @@ from apps.users.models import user
 
 # Create your models here.
 class Project(models.Model):
+    owner = models.ForeignKey(user, on_delete=models.DO_NOTHING, null=True)
     name = models.CharField(max_length=60, null=False, blank=False)
     init_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField(null=False, blank=False)
@@ -29,7 +30,11 @@ class Task(models.Model):
         null=False,
         blank=False,
     )
-
+    is_completed = models.BooleanField(default=False)
+    # user = models.ForeignKey(user, on_delete=models.DO_NOTHING, null=True)
+    
+    def __str__(self) -> str:
+        return f"{self.id} - {self.description}"
 
 class Comment(models.Model):
     init_date = models.DateTimeField(null=False, blank=False)
@@ -40,7 +45,7 @@ class Comment(models.Model):
 
 class Member(models.Model):
     user = models.ForeignKey(user, on_delete=models.DO_NOTHING)
-    Project = models.ForeignKey(Project, on_delete=models.DO_NOTHING)
+    project = models.ForeignKey(Project, on_delete=models.DO_NOTHING)
     roles = {
         "Admin": "Admin",
         "Developer": "Developer",
@@ -54,7 +59,7 @@ class Member(models.Model):
         null=False,
         blank=False,
     )
-    date = models.DateTimeField(null=False, blank=False)
+    date_joined = models.DateTimeField(null=True, blank=False)
 
 
 class Owner(models.Model):

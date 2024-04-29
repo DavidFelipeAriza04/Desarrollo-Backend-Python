@@ -10,6 +10,13 @@ class TaskSerializerModel(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = '__all__'
+
+class TaskDetailSerializer(serializers.ModelSerializer):
+    
+    project = ProjectSerializerModel()
+    class Meta:
+        model = Task
+        fields = '__all__'
         
 class ProjectSerializer(serializers.Serializer):
     
